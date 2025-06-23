@@ -42,6 +42,10 @@ export class AuthApiAdapter implements AuthRepositoryPort {
     });
   }
 
+  getCurrentUserProfile(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/me`);
+  }
+
   logout(): void {
     // En este caso, el logout es solo del lado del cliente
     localStorage.removeItem('token');

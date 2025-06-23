@@ -64,9 +64,9 @@ export class RegisterComponent implements OnInit {
     this.authService.signUp(signUpData).subscribe({
       next: (user) => {
         // Redirigir según el rol del usuario
-        if (role === 'EMISOR') {
+        if (role === 'ROLE_EMISOR') {
           this.router.navigate(['/emisor/dashboard']);
-        } else if (role === 'INVERSIONISTA') {
+        } else if (role === 'ROLE_INVERSOR') {
           this.router.navigate(['/inversor/dashboard']);
         } else {
           this.router.navigate(['/home']);

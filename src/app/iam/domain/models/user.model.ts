@@ -3,7 +3,7 @@ export interface User {
   id: number;
   username: string;
   token?: string;
-  roles: Role[];
+  roles: (Role | string)[];  // Puede ser objetos Role o strings directamente
 }
 
 export interface Role {
@@ -13,7 +13,7 @@ export interface Role {
 
 export enum RoleName {
   EMISOR = 'ROLE_EMISOR',
-  INVERSIONISTA = 'ROLE_INVERSIONISTA',
+  INVERSOR = 'ROLE_INVERSOR',
   ADMIN = 'ROLE_ADMIN'
 }
 

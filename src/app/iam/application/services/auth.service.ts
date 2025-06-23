@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { Observable, BehaviorSubject, of } from 'rxjs';
+import { tap, catchError, switchMap, map } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { User, SignUpData, Credentials } from '../../domain/models/user.model';
 import { AuthRepositoryPort } from '../../domain/ports/auth.repository.port';
@@ -57,12 +57,56 @@ export class AuthService {
     return this.authRepository.signIn(credentials).pipe(
       tap(user => {
         this.logger.logAuth('SIGN_IN', true, user, 'AuthService');
+        this.logger.info('🔍 Login response from backend', 'AuthService', { 
+          user: user,
+          hasRoles: !!user.roles,
+          rolesCount: user.roles?.length || 0
+        });
+        
+        // PRIMERO: Guardar el token inmediatamente para que esté disponible para el interceptor
         this.currentUserSubject.next(user);
         if (user.token) {
           localStorage.setItem('token', user.token);
           localStorage.setItem('user', JSON.stringify(user));
-          this.logger.info('✅ Token y usuario guardados en localStorage', 'AuthService');
+          this.logger.info('✅ Token guardado en localStorage', 'AuthService');
         }
+      }),
+      switchMap(user => {
+        // SEGUNDO: Ahora hacer la llamada a /me con el token ya disponible
+        this.logger.info('📞 Fetching user data from /authentication/me endpoint', 'AuthService');
+        
+        return this.authRepository.getCurrentUserProfile().pipe(
+          map(userProfile => {
+            this.logger.info('✅ User profile fetched successfully', 'AuthService', { 
+              userId: userProfile.id,
+              username: userProfile.username,
+              roles: userProfile.roles
+            });
+            
+            // Combinar datos del login con el perfil completo
+            const completeUser: User = {
+              id: userProfile.id,
+              username: userProfile.username,
+              token: user.token, // Mantener el token del login
+              roles: userProfile.roles || []
+            };
+            
+            // Actualizar con el usuario completo (con roles)
+            this.currentUserSubject.next(completeUser);
+            localStorage.setItem('user', JSON.stringify(completeUser));
+            this.logger.info('✅ Usuario completo con roles guardado en localStorage', 'AuthService');
+            
+            return completeUser; // Retornar el usuario completo
+          }),
+          catchError(rolesError => {
+            // Si falla la obtención de roles, continuar con el usuario sin roles
+            this.logger.warn('⚠️ No se pudieron obtener los roles, continuando sin roles', 'AuthService', {
+              error: rolesError.message,
+              status: rolesError.status
+            });
+            return of(user); // Retornar el usuario original sin roles
+          })
+        );
       }),
       catchError(error => {
         this.logger.logAuth('SIGN_IN', false, { username: credentials.username, error }, 'AuthService');
@@ -100,12 +144,27 @@ export class AuthService {
 
   hasRole(role: string): boolean {
     const currentUser = this.currentUserSubject.value;
-    const hasRole = currentUser?.roles?.some(r => r.name === role) || false;
-    this.logger.debug('🔍 Checking role', 'AuthService', {
+    
+    if (!currentUser?.roles) {
+      return false;
+    }
+    
+    const hasRole = currentUser.roles.some(r => {
+      // El backend devuelve roles como strings, no objetos
+      if (typeof r === 'string') {
+        return r === role;
+      } else if (r && typeof r === 'object' && 'name' in r) {
+        return (r as any).name === role;
+      }
+      return false;
+    });
+    
+    this.logger.debug('🔍 Role check', 'AuthService', {
       searchingFor: role,
-      userRoles: currentUser?.roles?.map(r => r.name) || [],
+      userRoles: currentUser.roles,
       hasRole
     });
+    
     return hasRole;
   }
 
@@ -114,17 +173,17 @@ export class AuthService {
     this.logger.debug('🎯 isEmisor check', 'AuthService', {
       result,
       currentUser: this.currentUserSubject.value?.username,
-      roles: this.currentUserSubject.value?.roles?.map(r => r.name) || []
+      roles: this.currentUserSubject.value?.roles || []
     });
     return result;
   }
 
   isInversor(): boolean {
-    const result = this.hasRole('ROLE_INVERSIONISTA');
+    const result = this.hasRole('ROLE_INVERSOR');
     this.logger.debug('🎯 isInversor check', 'AuthService', {
       result,
       currentUser: this.currentUserSubject.value?.username,
-      roles: this.currentUserSubject.value?.roles?.map(r => r.name) || []
+      roles: this.currentUserSubject.value?.roles || []
     });
     return result;
   }

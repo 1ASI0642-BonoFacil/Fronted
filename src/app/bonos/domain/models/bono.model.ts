@@ -10,17 +10,17 @@ export interface Bono {
   fechaEmision: string;
   tasaDescuento: number;
   metodoAmortizacion: MetodoAmortizacion;
-  plazoGracia: PlazoGracia;
-  moneda: Moneda;
-  tasaInteres: TasaInteres;
+  plazoGracia?: PlazoGracia;
+  moneda?: Moneda;
+  tasaInteres?: TasaInteres;
   emisorId?: number;
   emisorNombre?: string;
 }
 
 // Value Objects
 export interface PlazoGracia {
-  tipo: TipoPlazoGracia;
-  periodos: number;
+  tipo?: TipoPlazoGracia;
+  periodos?: number;
 }
 
 export enum TipoPlazoGracia {
@@ -30,14 +30,14 @@ export enum TipoPlazoGracia {
 }
 
 export interface Moneda {
-  codigo: string;
-  nombre: string;
-  simbolo: string;
+  codigo?: string;
+  nombre?: string;
+  simbolo?: string;
 }
 
 export interface TasaInteres {
-  valor: number;
-  tipo: TipoTasa;
+  valor?: number;
+  tipo?: TipoTasa;
   frecuenciaCapitalizacion?: number;
 }
 

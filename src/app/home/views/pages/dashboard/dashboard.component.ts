@@ -34,7 +34,14 @@ export class DashboardComponent implements OnInit {
     this.logger.info('🔍 Dashboard - Información del usuario', 'DashboardComponent', {
       currentUser: this.currentUser,
       roles: this.currentUser?.roles,
-      roleNames: this.currentUser?.roles?.map(r => r.name),
+      roleNames: this.currentUser?.roles?.map(r => {
+        if (typeof r === 'string') {
+          return r;
+        } else if (r && typeof r === 'object' && 'name' in r) {
+          return (r as any).name;
+        }
+        return r;
+      }),
       isEmisor: this.isEmisor,
       isInversor: this.isInversor,
       isAuthenticated: this.authService.isAuthenticated()

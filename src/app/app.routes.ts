@@ -66,11 +66,11 @@ export const routes: Routes = [
         loadComponent: () => import('./inversor/views/pages/catalogo-bonos/catalogo-bonos.component').then(m => m.CatalogoBonosComponent)
       },
       {
-        path: 'catalogo/:id',
+        path: 'detalle-bono/:id',
         loadComponent: () => import('./inversor/views/pages/detalle-bono/detalle-bono.component').then(m => m.DetalleBonoComponent)
       },
       {
-        path: 'calculos',
+        path: 'mis-calculos',
         loadComponent: () => import('./inversor/views/pages/mis-calculos/mis-calculos.component').then(m => m.MisCalculosComponent)
       },
       {

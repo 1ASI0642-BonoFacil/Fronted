@@ -77,7 +77,7 @@
             <td class="plazo">{{ bono.plazoAnios }} años</td>
             <td class="frequency">{{ bono.frecuenciaPagos }}x año</td>
             <td class="currency">
-                                <span class="currency-badge">{{ bono.moneda.codigo || 'USD' }}</span>
+                                <span class="currency-badge">{{ bono.moneda?.codigo || 'USD' }}</span>
             </td>
             <td class="date">{{ bono.fechaEmision | date:'dd/MM/yyyy' }}</td>
             <td class="actions">

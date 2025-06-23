@@ -4,12 +4,11 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../application/services/auth.service';
 import { LoggerService } from '../../../../shared/services/logger.service';
-import { DebugLoggerComponent } from '../../../../shared/components/debug-logger/debug-logger.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, DebugLoggerComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -62,7 +61,14 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (user) => {
         this.logger.info('✅ Login successful, checking roles...', 'LoginComponent', { 
           user: user.username,
-          roles: user.roles?.map(r => r.name) || []
+          roles: user.roles?.map(r => {
+            if (typeof r === 'string') {
+              return r;
+            } else if (r && typeof r === 'object' && 'name' in r) {
+              return (r as any).name;
+            }
+            return r;
+          }) || []
         });
         
         // Esperar un tick para asegurar que el usuario esté establecido en el servicio
@@ -78,7 +84,14 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.logger.info('🎯 Usuario identificado como INVERSOR', 'LoginComponent');
           } else {
             this.logger.warn('⚠️ Usuario sin rol específico, enviando a /home', 'LoginComponent', {
-              roles: user.roles?.map(r => r.name) || []
+              roles: user.roles?.map(r => {
+                if (typeof r === 'string') {
+                  return r;
+                } else if (r && typeof r === 'object' && 'name' in r) {
+                  return (r as any).name;
+                }
+                return r;
+              }) || []
             });
           }
           

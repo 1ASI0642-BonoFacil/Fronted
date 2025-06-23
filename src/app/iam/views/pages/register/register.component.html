@@ -65,8 +65,8 @@
           [class.is-invalid]="registerForm.get('role')?.invalid && registerForm.get('role')?.touched"
         >
           <option value="">Seleccione un rol</option>
-          <option value="EMISOR">Emisor de Bonos</option>
-          <option value="INVERSIONISTA">Inversionista</option>
+          <option value="ROLE_EMISOR">Emisor de Bonos</option>
+          <option value="ROLE_INVERSOR">Inversionista</option>
         </select>
         <div *ngIf="registerForm.get('role')?.invalid && registerForm.get('role')?.touched" class="invalid-feedback">
           Debe seleccionar un tipo de usuario
