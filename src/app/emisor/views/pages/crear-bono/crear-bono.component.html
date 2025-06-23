@@ -1,0 +1,284 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Crear Nuevo Bono</h1>
+      <p>Complete la información para emitir un nuevo bono corporativo</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/emisor/bonos" class="btn btn-secondary">
+        <i class="icon">←</i>
+        Volver a Mis Bonos
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Creando bono...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <div class="error-card">
+      <i class="error-icon">❌</i>
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div *ngIf="!loading" class="form-container">
+    <form [formGroup]="bonoForm" (ngSubmit)="onSubmit()" class="bono-form">
+      
+      <!-- Información Básica -->
+      <div class="form-section">
+        <h2>Información Básica</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombre">Nombre del Bono *</label>
+            <input
+              type="text"
+              id="nombre"
+              formControlName="nombre"
+              class="form-control"
+              placeholder="Ej: Bono Corporativo ABC 2024"
+              [class.is-invalid]="isFieldInvalid('nombre')"
+            />
+            <div *ngIf="isFieldInvalid('nombre')" class="invalid-feedback">
+              {{ getFieldError('nombre') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="descripcion">Descripción *</label>
+            <textarea
+              id="descripcion"
+              formControlName="descripcion"
+              class="form-control"
+              rows="3"
+              placeholder="Descripción detallada del bono y su propósito"
+              [class.is-invalid]="isFieldInvalid('descripcion')"
+            ></textarea>
+            <div *ngIf="isFieldInvalid('descripcion')" class="invalid-feedback">
+              {{ getFieldError('descripcion') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Características Financieras -->
+      <div class="form-section">
+        <h2>Características Financieras</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="valorNominal">Valor Nominal *</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input
+                type="number"
+                id="valorNominal"
+                formControlName="valorNominal"
+                class="form-control"
+                placeholder="1000"
+                min="100"
+                step="100"
+                [class.is-invalid]="isFieldInvalid('valorNominal')"
+              />
+            </div>
+            <div *ngIf="isFieldInvalid('valorNominal')" class="invalid-feedback">
+              {{ getFieldError('valorNominal') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="tasaCupon">Tasa Cupón (%)*</label>
+            <div class="input-group">
+              <input
+                type="number"
+                id="tasaCupon"
+                formControlName="tasaCupon"
+                class="form-control"
+                placeholder="8.0"
+                min="0.1"
+                max="50"
+                step="0.1"
+                [class.is-invalid]="isFieldInvalid('tasaCupon')"
+              />
+              <span class="input-group-text">%</span>
+            </div>
+            <div *ngIf="isFieldInvalid('tasaCupon')" class="invalid-feedback">
+              {{ getFieldError('tasaCupon') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="plazoAnios">Plazo (años)*</label>
+            <input
+              type="number"
+              id="plazoAnios"
+              formControlName="plazoAnios"
+              class="form-control"
+              placeholder="5"
+              min="1"
+              max="30"
+              [class.is-invalid]="isFieldInvalid('plazoAnios')"
+            />
+            <div *ngIf="isFieldInvalid('plazoAnios')" class="invalid-feedback">
+              {{ getFieldError('plazoAnios') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="frecuenciaPagos">Frecuencia de Pagos *</label>
+            <select
+              id="frecuenciaPagos"
+              formControlName="frecuenciaPagos"
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('frecuenciaPagos')"
+            >
+              <option value="">Seleccione frecuencia</option>
+              <option *ngFor="let opcion of frecuenciaOpciones" [value]="opcion.valor">
+                {{ opcion.texto }}
+              </option>
+            </select>
+            <div *ngIf="isFieldInvalid('frecuenciaPagos')" class="invalid-feedback">
+              {{ getFieldError('frecuenciaPagos') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="moneda">Moneda *</label>
+            <select
+              id="moneda"
+              formControlName="moneda"
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('moneda')"
+            >
+              <option value="">Seleccione moneda</option>
+              <option *ngFor="let moneda of monedas" [value]="moneda.codigo">
+                {{ moneda.codigo }} - {{ moneda.nombre }}
+              </option>
+            </select>
+            <div *ngIf="isFieldInvalid('moneda')" class="invalid-feedback">
+              {{ getFieldError('moneda') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fechaEmision">Fecha de Emisión *</label>
+            <input
+              type="date"
+              id="fechaEmision"
+              formControlName="fechaEmision"
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('fechaEmision')"
+            />
+            <div *ngIf="isFieldInvalid('fechaEmision')" class="invalid-feedback">
+              {{ getFieldError('fechaEmision') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuración Avanzada -->
+      <div class="form-section">
+        <h2>Configuración Avanzada</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="plazosGraciaTotal">Plazos de Gracia Total</label>
+            <input
+              type="number"
+              id="plazosGraciaTotal"
+              formControlName="plazosGraciaTotal"
+              class="form-control"
+              placeholder="0"
+              min="0"
+              [class.is-invalid]="isFieldInvalid('plazosGraciaTotal')"
+            />
+            <small class="form-text">Períodos sin pago de capital ni intereses</small>
+            <div *ngIf="isFieldInvalid('plazosGraciaTotal')" class="invalid-feedback">
+              {{ getFieldError('plazosGraciaTotal') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="plazosGraciaParcial">Plazos de Gracia Parcial</label>
+            <input
+              type="number"
+              id="plazosGraciaParcial"
+              formControlName="plazosGraciaParcial"
+              class="form-control"
+              placeholder="0"
+              min="0"
+              [class.is-invalid]="isFieldInvalid('plazosGraciaParcial')"
+            />
+            <small class="form-text">Períodos solo con pago de intereses</small>
+            <div *ngIf="isFieldInvalid('plazosGraciaParcial')" class="invalid-feedback">
+              {{ getFieldError('plazosGraciaParcial') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tasaDescuento">Tasa de Descuento (%)*</label>
+            <div class="input-group">
+              <input
+                type="number"
+                id="tasaDescuento"
+                formControlName="tasaDescuento"
+                class="form-control"
+                placeholder="8.0"
+                min="0.1"
+                max="50"
+                step="0.1"
+                [class.is-invalid]="isFieldInvalid('tasaDescuento')"
+              />
+              <span class="input-group-text">%</span>
+            </div>
+            <div *ngIf="isFieldInvalid('tasaDescuento')" class="invalid-feedback">
+              {{ getFieldError('tasaDescuento') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="metodoAmortizacion">Método de Amortización *</label>
+            <select
+              id="metodoAmortizacion"
+              formControlName="metodoAmortizacion"
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('metodoAmortizacion')"
+            >
+              <option value="AMERICANO">Método Americano</option>
+            </select>
+            <small class="form-text">Solo método americano disponible</small>
+            <div *ngIf="isFieldInvalid('metodoAmortizacion')" class="invalid-feedback">
+              {{ getFieldError('metodoAmortizacion') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="form-actions">
+        <button type="button" (click)="router.navigate(['/emisor/bonos'])" class="btn btn-secondary">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="bonoForm.invalid || loading">
+          <i class="icon">💾</i>
+          Crear Bono
+        </button>
+      </div>
+    </form>
+  </div>
+</div> 

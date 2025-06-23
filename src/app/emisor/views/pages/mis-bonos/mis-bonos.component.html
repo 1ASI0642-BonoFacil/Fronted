@@ -1,0 +1,107 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Mis Bonos</h1>
+      <p>Gestiona tus bonos emitidos</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/emisor/bonos/nuevo" class="btn btn-primary">
+        <i class="icon">➕</i>
+        Crear Nuevo Bono
+      </a>
+      <a routerLink="/emisor/dashboard" class="btn btn-secondary">
+        <i class="icon">🏠</i>
+        Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando bonos...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <div class="error-card">
+      <i class="error-icon">❌</i>
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+      <button (click)="loadBonos()" class="btn btn-primary">Reintentar</button>
+    </div>
+  </div>
+
+  <!-- Bonos Table -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <div class="table-header">
+      <h2>Bonos Emitidos ({{ bonos.length }})</h2>
+    </div>
+
+    <div *ngIf="bonos.length === 0" class="empty-state">
+      <div class="empty-card">
+        <i class="empty-icon">📋</i>
+        <h3>No hay bonos emitidos</h3>
+        <p>Comienza creando tu primer bono corporativo</p>
+        <a routerLink="/emisor/bonos/nuevo" class="btn btn-primary">
+          <i class="icon">➕</i>
+          Crear Primer Bono
+        </a>
+      </div>
+    </div>
+
+    <div *ngIf="bonos.length > 0" class="table-responsive">
+      <table class="bonos-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Valor Nominal</th>
+            <th>Tasa Cupón</th>
+            <th>Plazo</th>
+            <th>Frecuencia</th>
+            <th>Moneda</th>
+            <th>Fecha Emisión</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let bono of bonos; trackBy: trackByBonoId" class="bono-row">
+            <td class="bono-name">
+              <div class="name-cell">
+                <strong>{{ bono.nombre }}</strong>
+                <span class="description">{{ bono.descripcion }}</span>
+              </div>
+            </td>
+            <td class="amount">{{ formatCurrency(bono.valorNominal) }}</td>
+            <td class="rate">{{ formatPercent(bono.tasaCupon) }}</td>
+            <td class="plazo">{{ bono.plazoAnios }} años</td>
+            <td class="frequency">{{ bono.frecuenciaPagos }}x año</td>
+            <td class="currency">
+                                <span class="currency-badge">{{ bono.moneda.codigo || 'USD' }}</span>
+            </td>
+            <td class="date">{{ bono.fechaEmision | date:'dd/MM/yyyy' }}</td>
+            <td class="actions">
+              <div class="action-buttons">
+                <a [routerLink]="['/emisor/bonos', bono.id, 'flujo']" 
+                   class="btn btn-sm btn-info" 
+                   title="Ver Flujo de Caja">
+                  <i class="icon">📊</i>
+                </a>
+                <a [routerLink]="['/emisor/bonos', bono.id, 'editar']" 
+                   class="btn btn-sm btn-primary" 
+                   title="Editar">
+                  <i class="icon">✏️</i>
+                </a>
+                <button (click)="deleteBono(bono.id)" 
+                        class="btn btn-sm btn-danger" 
+                        title="Eliminar">
+                  <i class="icon">🗑️</i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,72 @@
+<div class="dashboard">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>BonoFácil</h2>
+      <p>Panel del Inversor</p>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/inversor/dashboard" class="nav-item active">
+        <i class="icon">📊</i>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/inversor/catalogo" class="nav-item">
+        <i class="icon">🏪</i>
+        <span>Catálogo de Bonos</span>
+      </a>
+      <a routerLink="/inversor/calculos" class="nav-item">
+        <i class="icon">📈</i>
+        <span>Mis Cálculos</span>
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <button (click)="logout()" class="logout-btn">
+        <i class="icon">🚪</i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="content-header">
+      <h1>Dashboard del Inversor</h1>
+      <p>Bienvenido al panel de inversiones</p>
+    </header>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+      <h2>Acciones Rápidas</h2>
+      <div class="actions-grid">
+        <a routerLink="/inversor/catalogo" class="action-card">
+          <i class="action-icon">🏪</i>
+          <h3>Explorar Bonos</h3>
+          <p>Ver catálogo completo de bonos disponibles</p>
+        </a>
+        
+        <a routerLink="/inversor/calculos" class="action-card">
+          <i class="action-icon">📊</i>
+          <h3>Mis Análisis</h3>
+          <p>Revisar cálculos de inversión guardados</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Information Section -->
+    <section class="info-section">
+      <h2>Herramientas de Análisis</h2>
+      <div class="info-card">
+        <h3>Cálculos Financieros Disponibles</h3>
+        <p>Utiliza nuestras herramientas para evaluar bonos corporativos:</p>
+        <ul>
+          <li>✓ TREA (Tasa de Rendimiento Efectivo Anual)</li>
+          <li>✓ Precio máximo de mercado</li>
+          <li>✓ Análisis de flujo de caja</li>
+          <li>✓ Duración y convexidad</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div> 

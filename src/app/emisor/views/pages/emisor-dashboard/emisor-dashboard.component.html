@@ -1,0 +1,109 @@
+<div class="dashboard">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>BonoFácil</h2>
+      <p>Panel del Emisor</p>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/emisor/dashboard" class="nav-item active">
+        <i class="icon">📊</i>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/emisor/bonos" class="nav-item">
+        <i class="icon">📋</i>
+        <span>Mis Bonos</span>
+      </a>
+      <a routerLink="/emisor/bonos/nuevo" class="nav-item">
+        <i class="icon">➕</i>
+        <span>Crear Bono</span>
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <i class="icon">👤</i>
+        <span>{{ currentUser?.username }}</span>
+      </div>
+      <button (click)="logout()" class="logout-btn">
+        <i class="icon">🚪</i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="content-header">
+      <h1>Dashboard del Emisor</h1>
+      <p>Bienvenido, {{ currentUser?.username }}</p>
+    </header>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i>📄</i>
+        </div>
+        <div class="stat-content">
+          <h3>Total de Bonos</h3>
+          <p class="stat-number">{{ totalBonos }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i>✅</i>
+        </div>
+        <div class="stat-content">
+          <h3>Bonos Activos</h3>
+          <p class="stat-number">{{ bonosActivos }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon purple">
+          <i>💰</i>
+        </div>
+        <div class="stat-content">
+          <h3>Monto Total Emitido</h3>
+          <p class="stat-number">${{ montoTotalEmitido | number:'1.2-2' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+      <h2>Acciones Rápidas</h2>
+      <div class="actions-grid">
+        <a routerLink="/emisor/bonos/nuevo" class="action-card">
+          <i class="action-icon">➕</i>
+          <h3>Crear Nuevo Bono</h3>
+          <p>Emitir un nuevo bono corporativo</p>
+        </a>
+        
+        <a routerLink="/emisor/bonos" class="action-card">
+          <i class="action-icon">📋</i>
+          <h3>Ver Mis Bonos</h3>
+          <p>Gestionar bonos existentes</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Information Section -->
+    <section class="info-section">
+      <h2>Información del Sistema</h2>
+      <div class="info-card">
+        <h3>Método de Amortización</h3>
+        <p>Este sistema utiliza el <strong>método americano</strong> para el cálculo de flujos de caja.</p>
+        <ul>
+          <li>✓ Pago de intereses periódicos</li>
+          <li>✓ Devolución del principal al vencimiento</li>
+          <li>✓ Soporte para plazos de gracia parciales y totales</li>
+          <li>✓ Cálculo de TCEA desde la perspectiva del emisor</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div> 

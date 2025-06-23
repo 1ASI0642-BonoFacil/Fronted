@@ -1,59 +1,158 @@
-# Untitled
+# BonoFácil - Sistema de Gestión de Bonos Corporativos
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.3.
+Sistema web para la gestión y cálculo de bonos corporativos con método americano, desarrollado con Angular 18 siguiendo los principios de Domain-Driven Design (DDD) y Arquitectura Hexagonal.
 
-## Development server
+## 🏗️ Arquitectura DDD
 
-To start a local development server, run:
+Este proyecto sigue los principios de Domain-Driven Design con la siguiente estructura:
 
+```
+src/app/
+├── core/                     # Núcleo de la aplicación
+│   ├── domain/              # Lógica de negocio central
+│   │   ├── models/          # Modelos de dominio
+│   │   └── ports/           # Interfaces (puertos)
+│   ├── application/         # Casos de uso
+│   │   └── services/        # Servicios de aplicación
+│   └── infrastructure/      # Implementaciones técnicas
+│       ├── adapters/        # Adaptadores externos
+│       ├── guards/          # Guards de Angular
+│       └── interceptors/    # Interceptores HTTP
+│
+├── shared/                  # Componentes compartidos
+│   ├── components/
+│   ├── services/
+│   └── models/
+│
+├── iam/                     # Identity & Access Management
+│   ├── domain/             # Dominio de autenticación
+│   ├── application/        # Lógica de autenticación
+│   ├── infrastructure/     # Adaptadores de auth
+│   └── views/              # Componentes de UI
+│
+├── bonos/                   # Gestión de bonos
+│   ├── domain/
+│   ├── application/
+│   ├── infrastructure/
+│   └── views/
+│
+├── emisor/                  # Módulo del emisor
+│   └── views/              # Vistas específicas del emisor
+│
+└── inversor/               # Módulo del inversor
+    └── views/              # Vistas específicas del inversor
+```
+
+### Principios de DDD Aplicados:
+
+1. **Separación de Dominios**: Cada módulo (IAM, Bonos, Emisor, Inversor) representa un contexto acotado.
+2. **Arquitectura Hexagonal**: Los puertos definen las interfaces, los adaptadores implementan la comunicación externa.
+3. **Inyección de Dependencias**: Los servicios de aplicación dependen de abstracciones (puertos), no de implementaciones concretas.
+4. **Value Objects**: Moneda, TasaInteres, PlazoGracia son objetos de valor inmutables.
+5. **Entidades**: User y Bono son las entidades principales con identidad única.
+
+## 🚀 Características
+
+- **Autenticación JWT** con roles (Emisor/Inversor)
+- **Gestión de Bonos** con método americano
+- **Cálculos Financieros**:
+  - Flujo de caja
+  - Duración y convexidad
+  - TCEA (Tasa de Coste Efectivo Anual)
+  - TREA (Tasa de Rendimiento Efectivo Anual)
+  - Precio máximo del mercado
+- **Plazos de Gracia** parciales y totales
+- **Dashboard diferenciado** por rol
+
+## 📋 Requisitos Previos
+
+- Node.js (v18 o superior)
+- Angular CLI (v18)
+- Backend API ejecutándose en `http://localhost:8090`
+
+## 🛠️ Instalación
+
+1. Clonar el repositorio:
+```bash
+git clone [url-del-repositorio]
+cd untitled
+```
+
+2. Instalar dependencias:
+```bash
+npm install
+```
+
+3. Configurar el entorno:
+   - Verificar que el archivo `src/environments/environment.ts` apunte al backend correcto
+
+## 🏃‍♂️ Ejecución
+
+### Desarrollo
 ```bash
 ng serve
 ```
+La aplicación estará disponible en `http://localhost:4200`
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+### Producción
 ```bash
-ng generate component component-name
+ng build --prod
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 🔐 Flujo de Autenticación
+
+1. El usuario accede a `/login`
+2. Ingresa credenciales y selecciona rol al registrarse
+3. El sistema redirige según el rol:
+   - **Emisor**: `/emisor/dashboard`
+   - **Inversor**: `/inversor/dashboard`
+4. Los guards protegen las rutas según permisos
+
+## 📊 Módulos Principales
+
+### IAM (Identity & Access Management)
+- Login/Registro
+- Gestión de sesiones
+- Guards y interceptores JWT
+
+### Emisor
+- Dashboard con estadísticas
+- Crear/Editar/Eliminar bonos
+- Ver flujos de caja
+- Calcular TCEA
+
+### Inversor
+- Catálogo de bonos disponibles
+- Filtros por moneda y tasa
+- Cálculos de inversión
+- Guardar análisis
+
+## 🧪 Testing
 
 ```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
+# Unit tests
 ng test
-```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
+# E2E tests
 ng e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## 📝 Notas Importantes
 
-## Additional Resources
+- El sistema usa **método americano** exclusivamente
+- Los cálculos financieros siguen las fórmulas estándar de finanzas corporativas
+- La autenticación JWT expira según configuración del backend
+- Los datos se sincronizan en tiempo real con el backend
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 🤝 Contribución
+
+Este proyecto sigue las convenciones de Angular y los principios SOLID. Al contribuir:
+
+1. Mantener la separación de dominios
+2. Seguir la arquitectura hexagonal
+3. Crear tests para nuevas funcionalidades
+4. Documentar cambios significativos
+
+## 📄 Licencia
+
+[Especificar licencia]

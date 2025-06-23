@@ -1,0 +1,205 @@
+<div class="admin-panel">
+  <div class="admin-header">
+    <h1>Panel de Administración</h1>
+    <p>Gestión de usuarios, roles, perfiles y bonos generales</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos de administración...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-card">
+      <i class="error-icon">❌</i>
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+      <button (click)="loadAllData()" class="btn btn-primary">Reintentar</button>
+    </div>
+  </div>
+
+  <!-- Admin Content -->
+  <div *ngIf="!loading && !error" class="admin-content">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button 
+        *ngFor="let tab of [
+          {key: 'users', label: '👥 Usuarios', count: users.length},
+          {key: 'roles', label: '🎭 Roles', count: roles.length},
+          {key: 'profiles', label: '📊 Perfiles', count: profiles.length},
+          {key: 'bonos', label: '💰 Bonos Generales', count: bonosGenerales.length}
+        ]"
+        [class.active]="activeTab === tab.key"
+        (click)="setActiveTab(tab.key)"
+        class="tab-button"
+      >
+        {{ tab.label }} ({{ tab.count }})
+      </button>
+    </div>
+
+    <!-- Users Tab -->
+    <div *ngIf="activeTab === 'users'" class="tab-content">
+      <div class="section-header">
+        <h2>Gestión de Usuarios</h2>
+        <span class="subtitle">Lista de todos los usuarios registrados</span>
+      </div>
+      
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Email</th>
+              <th>Roles</th>
+              <th>Estado</th>
+              <th>Fecha Creación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>{{ user.id }}</td>
+              <td class="username">{{ user.username }}</td>
+              <td>{{ user.email || 'N/A' }}</td>
+              <td>
+                <span *ngFor="let role of user.roles" class="role-badge">
+                  {{ role.name }}
+                </span>
+              </td>
+              <td>
+                <span [class]="'status-badge ' + (user.isActive ? 'active' : 'inactive')">
+                  {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Roles Tab -->
+    <div *ngIf="activeTab === 'roles'" class="tab-content">
+      <div class="section-header">
+        <h2>Gestión de Roles</h2>
+        <span class="subtitle">Roles y permisos del sistema</span>
+      </div>
+      
+      <div class="cards-container">
+        <div *ngFor="let role of roles" class="role-card">
+          <div class="role-header">
+            <h3>{{ role.name }}</h3>
+            <span class="role-id">ID: {{ role.id }}</span>
+          </div>
+          <p class="role-description">{{ role.description || 'Sin descripción' }}</p>
+          <div class="permissions">
+            <h4>Permisos:</h4>
+            <div class="permission-list">
+              <span *ngFor="let permission of role.permissions" class="permission-badge">
+                {{ permission }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profiles Tab -->
+    <div *ngIf="activeTab === 'profiles'" class="tab-content">
+      <div class="section-header">
+        <h2>Gestión de Perfiles</h2>
+        <span class="subtitle">Perfiles de usuario registrados</span>
+      </div>
+      
+      <div class="cards-container">
+        <div *ngFor="let profile of profiles" class="profile-card">
+          <div class="profile-avatar">
+            <img 
+              [src]="profile.profileImageUrl || '/assets/default-avatar.png'" 
+              [alt]="profile.firstName + ' ' + profile.lastName"
+              onerror="this.src='/assets/default-avatar.png'"
+            />
+          </div>
+          <div class="profile-info">
+            <h3>{{ profile.firstName }} {{ profile.lastName }}</h3>
+            <p class="profile-email">{{ profile.email }}</p>
+            <div *ngIf="profile.phoneNumber" class="profile-phone">
+              📞 {{ profile.phoneNumber }}
+            </div>
+            <div *ngIf="profile.address" class="profile-address">
+              📍 {{ profile.address }}
+            </div>
+            <div class="profile-meta">
+              <small>Usuario ID: {{ profile.userId }}</small>
+              <small>Creado: {{ profile.createdAt | date:'dd/MM/yyyy' }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bonos Generales Tab -->
+    <div *ngIf="activeTab === 'bonos'" class="tab-content">
+      <div class="section-header">
+        <h2>API General de Bonos</h2>
+        <span class="subtitle">Todos los bonos del sistema</span>
+      </div>
+
+      <!-- Search -->
+      <div class="search-container">
+        <input 
+          #searchInput
+          type="text" 
+          placeholder="Buscar bonos por nombre..."
+          class="search-input"
+          (keyup.enter)="searchBonos(searchInput.value)"
+        />
+        <button (click)="searchBonos(searchInput.value)" class="btn btn-search">
+          🔍 Buscar
+        </button>
+        <button (click)="loadAllData(); searchInput.value=''" class="btn btn-secondary">
+          🔄 Limpiar
+        </button>
+      </div>
+      
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Valor Nominal</th>
+              <th>Tasa Cupón</th>
+              <th>Plazo</th>
+              <th>Moneda</th>
+              <th>Emisor</th>
+              <th>Estado</th>
+              <th>Vencimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bono of bonosGenerales">
+              <td>{{ bono.id }}</td>
+              <td class="bono-name">{{ bono.nombre }}</td>
+              <td class="amount">{{ bono.valorNominal | currency:bono.moneda:'symbol' }}</td>
+              <td class="rate">{{ bono.tasaCupon }}%</td>
+              <td>{{ bono.plazoAnios }} años</td>
+              <td>
+                <span class="currency-badge">{{ bono.moneda }}</span>
+              </td>
+              <td>{{ bono.emisor }}</td>
+              <td>
+                <span [class]="'status-badge ' + bono.estado.toLowerCase()">
+                  {{ bono.estado }}
+                </span>
+              </td>
+              <td>{{ bono.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div> 
