@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LoggerService } from '../../../../shared/services/logger.service';
+import { CalculoService, CalculoTREA } from '../../../application/services/calculo.service';
 
 @Component({
   selector: 'app-mis-calculos',
@@ -13,8 +14,8 @@ import { LoggerService } from '../../../../shared/services/logger.service';
       <!-- Header Principal -->
       <div class="page-header">
         <div class="header-content">
-          <h1>Herramientas de Cálculo</h1>
-          <p class="subtitle">Analiza el rendimiento de tus inversiones en bonos</p>
+          <h1>Calculadora Financiera</h1>
+          <p class="subtitle">Herramientas independientes para análisis de bonos</p>
         </div>
         <div class="header-actions">
           <a routerLink="/inversor/catalogo" class="btn btn-primary">
@@ -524,7 +525,8 @@ export class MisCalculosComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private calculoService: CalculoService
   ) {}
 
   ngOnInit(): void {
@@ -543,25 +545,60 @@ export class MisCalculosComponent implements OnInit {
 
     const { precioCompra, valorNominal, tasaCupon, plazoAnios } = this.calculadora;
     
-    // Cálculo simplificado de TREA
-    const cuponAnual = (valorNominal * tasaCupon) / 100;
-    const gananciaCupon = cuponAnual * plazoAnios;
-    const gananciaCapital = valorNominal - precioCompra;
-    const gananciaTotal = gananciaCupon + gananciaCapital;
-    
-    const rendimientoAnual = gananciaTotal / plazoAnios;
-    const trea = (rendimientoAnual / precioCompra) * 100;
-    const rentabilidadTotal = (gananciaTotal / precioCompra) * 100;
+    // Usar el servicio para calcular TREA
+    const calculoDetallado = this.calculoService.calcularTREAIndependiente(
+      precioCompra, valorNominal, tasaCupon, plazoAnios
+    );
 
     this.resultado = {
-      trea: Number(trea.toFixed(2)),
-      rendimientoAnual: Number(rendimientoAnual.toFixed(2)),
-      rentabilidadTotal: Number(rentabilidadTotal.toFixed(2))
+      trea: calculoDetallado.trea,
+      rendimientoAnual: calculoDetallado.gananciaTotal / plazoAnios,
+      rentabilidadTotal: calculoDetallado.rentabilidadTotal
     };
+
+    // Guardar en historial
+    this.guardarEnHistorial();
 
     this.logger.info('📊 TREA calculada exitosamente', 'MisCalculosComponent', {
       calculadora: this.calculadora,
-      resultado: this.resultado
+      resultado: this.resultado,
+      calculoDetallado
     });
+  }
+
+  private guardarEnHistorial(): void {
+    if (!this.resultado) return;
+
+    const analisis = {
+      id: Date.now().toString(),
+      fecha: new Date(),
+      tipo: 'TREA' as const,
+      bono: 'Cálculo Independiente',
+      parametros: { ...this.calculadora },
+      resultados: { ...this.resultado }
+    };
+
+    // Obtener historial existente
+    const historialStr = localStorage.getItem('historial_analisis_bonofacil');
+    let historial = [];
+    
+    if (historialStr) {
+      try {
+        historial = JSON.parse(historialStr);
+      } catch (error) {
+        historial = [];
+      }
+    }
+
+    // Agregar nuevo análisis al principio
+    historial.unshift(analisis);
+
+    // Mantener solo los últimos 20 análisis
+    historial = historial.slice(0, 20);
+
+    // Guardar en localStorage
+    localStorage.setItem('historial_analisis_bonofacil', JSON.stringify(historial));
+
+    this.logger.info('💾 Análisis guardado en historial', 'MisCalculosComponent', { analisis });
   }
 } 

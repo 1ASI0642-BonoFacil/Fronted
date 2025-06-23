@@ -74,6 +74,14 @@ export const routes: Routes = [
         loadComponent: () => import('./inversor/views/pages/mis-calculos/mis-calculos.component').then(m => m.MisCalculosComponent)
       },
       {
+        path: 'calcular-flujo/:id',
+        loadComponent: () => import('./inversor/views/pages/calcular-flujo/calcular-flujo.component').then(m => m.CalcularFlujoComponent)
+      },
+      {
+        path: 'historial',
+        loadComponent: () => import('./inversor/views/pages/historial-analisis/historial-analisis.component').then(m => m.HistorialAnalisisComponent)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

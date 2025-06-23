@@ -176,9 +176,9 @@ import { LoggerService } from '../../../../shared/services/logger.service';
                   <i class="icon">📋</i>
                   Ver Detalles
                 </a>
-                <a [routerLink]="['/inversor/mis-calculos']" class="btn btn-primary btn-sm">
+                <a [routerLink]="['/inversor/calcular-flujo', bono.id]" class="btn btn-primary btn-sm">
                   <i class="icon">📊</i>
-                  Calcular Rendimiento
+                  Calcular Flujo
                 </a>
               </div>
             </div>
@@ -694,7 +694,7 @@ export class CatalogoBonosComponent implements OnInit {
       next: (bonos) => {
         this.bonos = bonos;
         this.loading = false;
-        this.logger.info('✅ Catálogo de bonos cargado exitosamente', 'CatalogoBonosComponent', {
+        this.logger.info('✅ Catálogo de bonos cargado desde backend', 'CatalogoBonosComponent', {
           cantidad: bonos.length,
           bonos: bonos.map(b => ({ id: b.id, nombre: b.nombre, emisor: b.emisorNombre }))
         });

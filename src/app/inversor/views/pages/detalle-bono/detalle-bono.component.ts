@@ -2,7 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { BonoService } from '../../../../bonos/application/services/bono.service';
-import { Bono, FlujoCaja } from '../../../../bonos/domain/models/bono.model';
+import { Bono } from '../../../../bonos/domain/models/bono.model';
 import { LoggerService } from '../../../../shared/services/logger.service';
 
 @Component({
@@ -124,46 +124,7 @@ import { LoggerService } from '../../../../shared/services/logger.service';
             <p>{{ bono.descripcion }}</p>
           </div>
 
-          <!-- Flujo de Caja -->
-          <div class="flujo-section">
-            <div class="flujo-header">
-              <h3>Flujo de Caja</h3>
-              <button class="btn-cargar-flujo" (click)="cargarFlujoCaja()" [disabled]="loadingFlujo">
-                {{ loadingFlujo ? 'Cargando...' : 'Cargar Flujo de Caja' }}
-              </button>
-            </div>
 
-            <div *ngIf="errorFlujo" class="error-flujo">
-              <p>Error al cargar flujo de caja: {{ errorFlujo }}</p>
-            </div>
-
-            <div *ngIf="flujoCaja.length > 0" class="flujo-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Período</th>
-                    <th>Fecha</th>
-                    <th>Cupón</th>
-                    <th>Amortización</th>
-                    <th>Flujo Total</th>
-                    <th>Saldo Insoluto</th>
-                    <th>Valor Presente</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let flujo of flujoCaja">
-                    <td>{{ flujo.periodo }}</td>
-                    <td>{{ flujo.fecha | date:'dd/MM/yyyy' }}</td>
-                    <td>{{ flujo.cupon | number:'1.2-2' }}</td>
-                    <td>{{ flujo.amortizacion | number:'1.2-2' }}</td>
-                    <td class="flujo-total">{{ flujo.flujoTotal | number:'1.2-2' }}</td>
-                    <td>{{ flujo.saldoInsoluto | number:'1.2-2' }}</td>
-                    <td>{{ flujo.valorPresente | number:'1.2-2' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
 
                      <!-- Acciones -->
            <div class="acciones">
@@ -425,77 +386,7 @@ import { LoggerService } from '../../../../shared/services/logger.service';
       padding-bottom: 5px;
     }
 
-    .flujo-section {
-      margin-bottom: 30px;
-    }
 
-    .flujo-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .flujo-header h3 {
-      color: #495057;
-      margin: 0;
-    }
-
-    .btn-cargar-flujo {
-      padding: 8px 16px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .btn-cargar-flujo:disabled {
-      background: #6c757d;
-      cursor: not-allowed;
-    }
-
-    .error-flujo {
-      color: #dc3545;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .flujo-table {
-      overflow-x: auto;
-    }
-
-    .flujo-table table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .flujo-table th,
-    .flujo-table td {
-      padding: 12px;
-      text-align: right;
-      border-bottom: 1px solid #e9ecef;
-    }
-
-    .flujo-table th {
-      background: #f8f9fa;
-      font-weight: 600;
-      color: #495057;
-    }
-
-    .flujo-table td:first-child,
-    .flujo-table th:first-child {
-      text-align: center;
-    }
-
-    .flujo-total {
-      font-weight: 600;
-      color: #28a745;
-    }
 
     .acciones {
       display: flex;
@@ -524,20 +415,13 @@ import { LoggerService } from '../../../../shared/services/logger.service';
       .acciones {
         flex-direction: column;
       }
-      
-      .flujo-table {
-        font-size: 0.9em;
-      }
     }
   `]
 })
 export class DetalleBonoComponent implements OnInit {
   bono: Bono | null = null;
-  flujoCaja: FlujoCaja[] = [];
   loading = false;
-  loadingFlujo = false;
   error = '';
-  errorFlujo = '';
   bonoId: number = 0;
 
   constructor(
@@ -587,32 +471,5 @@ export class DetalleBonoComponent implements OnInit {
     });
   }
 
-  cargarFlujoCaja(): void {
-    if (!this.bonoId) return;
-    
-    this.loadingFlujo = true;
-    this.errorFlujo = '';
-    
-    this.logger.info('🔄 Cargando flujo de caja', 'DetalleBonoComponent', { bonoId: this.bonoId });
-    
-    this.bonoService.getFlujoBonoInversor(this.bonoId).subscribe({
-      next: (flujo) => {
-        this.flujoCaja = flujo;
-        this.loadingFlujo = false;
-        this.logger.info('✅ Flujo de caja cargado exitosamente', 'DetalleBonoComponent', {
-          bonoId: this.bonoId,
-          periodos: flujo.length
-        });
-      },
-      error: (error) => {
-        this.errorFlujo = error.error?.message || 'Error al cargar el flujo de caja';
-        this.loadingFlujo = false;
-        this.logger.error('❌ Error al cargar flujo de caja', 'DetalleBonoComponent', {
-          bonoId: this.bonoId,
-          error: this.errorFlujo,
-          status: error.status
-        });
-      }
-    });
-  }
+
 }
