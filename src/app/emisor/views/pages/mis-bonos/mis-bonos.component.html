@@ -1,101 +1,257 @@
-<div class="page-container">
-  <div class="page-header">
+<!-- DISEÑO MINIMALISTA Y PROFESIONAL -->
+<div class="container">
+  <!-- HEADER SIMPLE Y LIMPIO -->
+  <header class="page-header">
     <div class="header-content">
-      <h1>Mis Bonos</h1>
-      <p>Gestiona tus bonos emitidos</p>
+      <h1 class="page-title">Mis Bonos</h1>
+      <p class="page-subtitle">Gestiona tu portafolio de instrumentos financieros</p>
     </div>
     <div class="header-actions">
-      <a routerLink="/emisor/bonos/nuevo" class="btn btn-primary">
-        <i class="icon">➕</i>
+      <button class="btn btn-primary" routerLink="/emisor/bonos/nuevo">
+        <span class="btn-icon">+</span>
         Crear Nuevo Bono
-      </a>
-      <a routerLink="/emisor/dashboard" class="btn btn-secondary">
-        <i class="icon">🏠</i>
+      </button>
+      <button class="btn btn-secondary" routerLink="/emisor/dashboard">
         Dashboard
-      </a>
+      </button>
     </div>
-  </div>
+  </header>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading-container">
+  <!-- ESTADÍSTICAS RESUMIDAS -->
+  <section class="stats-section" *ngIf="!loading && !error && bonos.length > 0">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ stats.totalBonos }}</div>
+        <div class="stat-label">Total Bonos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ formatCurrency(stats.valorTotal) }}</div>
+        <div class="stat-label">Valor Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ formatPercent(stats.promedioTasa) }}</div>
+        <div class="stat-label">Tasa Promedio</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ stats.bonosActivos }}</div>
+        <div class="stat-label">Bonos Activos</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTROLES DE VISTA -->
+  <section class="controls-section" *ngIf="!loading && !error && bonos.length > 0">
+    <div class="controls-bar">
+      <div class="view-controls">
+        <button 
+          *ngFor="let mode of viewModes" 
+          class="view-btn"
+          [class.active]="currentView === mode.type"
+          (click)="changeView(mode.type)">
+          {{ mode.label }}
+        </button>
+      </div>
+      
+      <div class="action-controls">
+        <button class="btn btn-ghost" (click)="showFilters = !showFilters">
+          <span class="btn-icon">⚙</span>
+          {{ showFilters ? 'Ocultar Filtros' : 'Filtros' }}
+        </button>
+        <div class="selection-info" *ngIf="selectedBonos.size > 0">
+          <span class="selection-count">{{ selectedBonos.size }} seleccionados</span>
+          <button class="btn btn-danger-ghost" (click)="deleteSelectedBonos()">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTROS SIMPLES -->
+    <div class="filters-section" [class.show]="showFilters">
+      <div class="filters-row">
+        <div class="filter-group">
+          <input 
+            type="text" 
+            class="filter-input" 
+            placeholder="Buscar bonos..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange(searchTerm)">
+        </div>
+        <div class="filter-group">
+          <select class="filter-select" [(ngModel)]="filterState.moneda" (change)="applyFilters()">
+            <option value="">Todas las monedas</option>
+            <option *ngFor="let currency of availableCurrencies" [value]="currency">{{ currency }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <select class="filter-select" [(ngModel)]="filterState.sortBy" (change)="applyFilters()">
+            <option value="fechaEmision">Ordenar por fecha</option>
+            <option value="nombre">Ordenar por nombre</option>
+            <option value="valorNominal">Ordenar por valor</option>
+            <option value="tasaCupon">Ordenar por tasa</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost" (click)="clearFilters()" *ngIf="filterState.searchTerm || filterState.moneda">
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOADING STATE -->
+  <div class="loading-state" *ngIf="loading">
     <div class="spinner"></div>
     <p>Cargando bonos...</p>
   </div>
 
-  <!-- Error State -->
-  <div *ngIf="error" class="error-container">
-    <div class="error-card">
-      <i class="error-icon">❌</i>
-      <h3>Error</h3>
-      <p>{{ error }}</p>
-      <button (click)="loadBonos()" class="btn btn-primary">Reintentar</button>
-    </div>
+  <!-- ERROR STATE -->
+  <div class="error-state" *ngIf="error">
+    <div class="error-icon">⚠</div>
+    <h3>Error al cargar los bonos</h3>
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="loadBonos()">Reintentar</button>
   </div>
 
-  <!-- Bonos Table -->
-  <div *ngIf="!loading && !error" class="table-container">
-    <div class="table-header">
-      <h2>Bonos Emitidos ({{ bonos.length }})</h2>
+  <!-- EMPTY STATE -->
+  <div class="empty-state" *ngIf="!loading && !error && bonos.length === 0">
+    <div class="empty-icon">📄</div>
+    <h3>No tienes bonos emitidos</h3>
+    <p>Comienza creando tu primer bono corporativo</p>
+    <button class="btn btn-primary" routerLink="/emisor/bonos/nuevo">
+      Crear Primer Bono
+    </button>
+  </div>
+
+  <!-- VISTA TARJETAS -->
+  <section class="content-section" *ngIf="!loading && !error && filteredBonos.length > 0 && currentView === 'grid'">
+    <div class="selection-header" *ngIf="filteredBonos.length > 1">
+      <label class="checkbox-label">
+        <input type="checkbox" 
+               [checked]="selectedBonos.size === filteredBonos.length"
+               [indeterminate]="selectedBonos.size > 0 && selectedBonos.size < filteredBonos.length"
+               (change)="selectAllBonos()">
+        <span class="checkbox-text">Seleccionar todos</span>
+      </label>
     </div>
 
-    <div *ngIf="bonos.length === 0" class="empty-state">
-      <div class="empty-card">
-        <i class="empty-icon">📋</i>
-        <h3>No hay bonos emitidos</h3>
-        <p>Comienza creando tu primer bono corporativo</p>
-        <a routerLink="/emisor/bonos/nuevo" class="btn btn-primary">
-          <i class="icon">➕</i>
-          Crear Primer Bono
-        </a>
+    <div class="cards-grid">
+      <div 
+        *ngFor="let bono of filteredBonos; trackBy: trackByBonoId" 
+        class="bono-card"
+        [class.selected]="selectedBonos.has(bono.id)">
+        
+        <div class="card-header">
+          <label class="checkbox-label">
+            <input type="checkbox" 
+                   [checked]="selectedBonos.has(bono.id)"
+                   (change)="toggleBonoSelection(bono.id)">
+          </label>
+          <div class="status-badge" [attr.data-status]="getBonoStatus(bono).status">
+            {{ getBonoStatus(bono).label }}
+          </div>
+        </div>
+
+        <div class="card-content">
+          <h3 class="bono-title">{{ bono.nombre }}</h3>
+          <p class="bono-description" *ngIf="bono.descripcion">{{ bono.descripcion }}</p>
+          
+          <div class="bono-metrics">
+            <div class="metric">
+              <span class="metric-label">Valor Nominal</span>
+              <span class="metric-value">{{ formatCurrency(bono.valorNominal, bono.moneda?.codigo) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Tasa Cupón</span>
+              <span class="metric-value">{{ formatPercent(bono.tasaCupon) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Plazo</span>
+              <span class="metric-value">{{ bono.plazoAnios }} años</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Frecuencia</span>
+              <span class="metric-value">{{ bono.frecuenciaPagos }}x año</span>
+            </div>
+          </div>
+
+          <div class="progress-info">
+            <div class="progress-header">
+              <span class="progress-text">Progreso: {{ getProgressPercentage(bono).toFixed(0) }}%</span>
+              <span class="days-remaining">{{ getDaysToMaturity(bono) }} días restantes</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getProgressPercentage(bono)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="action-btn" [routerLink]="['/emisor/bonos', bono.id, 'flujo']">
+            Ver Flujo
+          </button>
+          <button class="action-btn secondary" [routerLink]="['/emisor/bonos', bono.id, 'editar']">
+            Editar
+          </button>
+          <button class="action-btn danger" (click)="deleteBono(bono.id)">
+            Eliminar
+          </button>
+        </div>
       </div>
     </div>
+  </section>
 
-    <div *ngIf="bonos.length > 0" class="table-responsive">
+  <!-- VISTA LISTA -->
+  <section class="content-section" *ngIf="!loading && !error && filteredBonos.length > 0 && currentView === 'list'">
+    <div class="table-container">
       <table class="bonos-table">
         <thead>
           <tr>
+            <th width="40">
+              <input type="checkbox" 
+                     [checked]="selectedBonos.size === filteredBonos.length"
+                     [indeterminate]="selectedBonos.size > 0 && selectedBonos.size < filteredBonos.length"
+                     (change)="selectAllBonos()">
+            </th>
             <th>Nombre</th>
             <th>Valor Nominal</th>
             <th>Tasa Cupón</th>
             <th>Plazo</th>
-            <th>Frecuencia</th>
-            <th>Moneda</th>
-            <th>Fecha Emisión</th>
-            <th>Acciones</th>
+            <th>Estado</th>
+            <th width="200">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let bono of bonos; trackBy: trackByBonoId" class="bono-row">
-            <td class="bono-name">
-              <div class="name-cell">
-                <strong>{{ bono.nombre }}</strong>
-                <span class="description">{{ bono.descripcion }}</span>
+          <tr *ngFor="let bono of filteredBonos; trackBy: trackByBonoId" 
+              [class.selected]="selectedBonos.has(bono.id)">
+            <td>
+              <input type="checkbox" 
+                     [checked]="selectedBonos.has(bono.id)"
+                     (change)="toggleBonoSelection(bono.id)">
+            </td>
+            <td>
+              <div class="table-name-cell">
+                <span class="name">{{ bono.nombre }}</span>
+                <span class="description" *ngIf="bono.descripcion">{{ bono.descripcion }}</span>
               </div>
             </td>
-            <td class="amount">{{ formatCurrency(bono.valorNominal) }}</td>
-            <td class="rate">{{ formatPercent(bono.tasaCupon) }}</td>
-            <td class="plazo">{{ bono.plazoAnios }} años</td>
-            <td class="frequency">{{ bono.frecuenciaPagos }}x año</td>
-            <td class="currency">
-                                <span class="currency-badge">{{ bono.moneda?.codigo || 'USD' }}</span>
+            <td class="number">{{ formatCurrency(bono.valorNominal, bono.moneda?.codigo) }}</td>
+            <td class="number">{{ formatPercent(bono.tasaCupon) }}</td>
+            <td>{{ bono.plazoAnios }} años</td>
+            <td>
+              <span class="status-badge" [attr.data-status]="getBonoStatus(bono).status">
+                {{ getBonoStatus(bono).label }}
+              </span>
             </td>
-            <td class="date">{{ bono.fechaEmision | date:'dd/MM/yyyy' }}</td>
-            <td class="actions">
-              <div class="action-buttons">
-                <a [routerLink]="['/emisor/bonos', bono.id, 'flujo']" 
-                   class="btn btn-sm btn-info" 
-                   title="Ver Flujo de Caja">
-                  <i class="icon">📊</i>
-                </a>
-                <a [routerLink]="['/emisor/bonos', bono.id, 'editar']" 
-                   class="btn btn-sm btn-primary" 
-                   title="Editar">
-                  <i class="icon">✏️</i>
-                </a>
-                <button (click)="deleteBono(bono.id)" 
-                        class="btn btn-sm btn-danger" 
-                        title="Eliminar">
-                  <i class="icon">🗑️</i>
+            <td>
+              <div class="table-actions">
+                <button class="table-action-btn" [routerLink]="['/emisor/bonos', bono.id, 'flujo']" title="Ver Flujo">
+                  📊
+                </button>
+                <button class="table-action-btn" [routerLink]="['/emisor/bonos', bono.id, 'editar']" title="Editar">
+                  ✏️
+                </button>
+                <button class="table-action-btn danger" (click)="deleteBono(bono.id)" title="Eliminar">
+                  🗑️
                 </button>
               </div>
             </td>
@@ -103,5 +259,15 @@
         </tbody>
       </table>
     </div>
+  </section>
+
+
+
+  <!-- NO RESULTS -->
+  <div class="no-results" *ngIf="!loading && !error && filteredBonos.length === 0 && bonos.length > 0">
+    <div class="no-results-icon">🔍</div>
+    <h3>No se encontraron bonos</h3>
+    <p>Intenta ajustar tus filtros de búsqueda</p>
+    <button class="btn btn-secondary" (click)="clearFilters()">Limpiar Filtros</button>
   </div>
 </div> 
