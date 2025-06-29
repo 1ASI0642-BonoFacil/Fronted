@@ -13,7 +13,7 @@
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading" class="loading-container">
+  <div *ngIf="isLoading" class="loading-container">
     <div class="spinner"></div>
     <p>Creando bono...</p>
   </div>
@@ -28,7 +28,7 @@
   </div>
 
   <!-- Form -->
-  <div *ngIf="!loading" class="form-container">
+  <div *ngIf="!isLoading" class="form-container">
     <form [formGroup]="bonoForm" (ngSubmit)="onSubmit()" class="bono-form">
       
       <!-- Información Básica -->
@@ -269,12 +269,138 @@
         </div>
       </div>
 
+      <!-- 🚀 Configuración Premium de Tasas de Interés -->
+      <div class="form-section premium-section">
+        <div class="section-header-premium">
+          <h2>🚀 Configuración Avanzada de Tasas</h2>
+          <div class="premium-badge">
+            <span class="badge premium">Premium</span>
+            <span class="exclusive-text">Configuración que otros no tienen</span>
+          </div>
+        </div>
+        
+        <div class="premium-content">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tipoTasa">Tipo de Tasa de Interés *</label>
+              <select
+                id="tipoTasa"
+                formControlName="tipoTasa"
+                class="form-control premium"
+                [class.is-invalid]="isFieldInvalid('tipoTasa')"
+                (change)="onTipoTasaChange($event)"
+              >
+                <option value="EFECTIVA">Tasa Efectiva</option>
+                <option value="NOMINAL">Tasa Nominal</option>
+              </select>
+              <small class="form-text">
+                <strong>Efectiva:</strong> Ya incluye capitalización 
+                | <strong>Nominal:</strong> Requiere configurar capitalización
+              </small>
+              <div *ngIf="isFieldInvalid('tipoTasa')" class="invalid-feedback">
+                {{ getFieldError('tipoTasa') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="valorTasaInteres">Valor de la Tasa (%)*</label>
+              <div class="input-group premium">
+                <input
+                  type="number"
+                  id="valorTasaInteres"
+                  formControlName="valorTasaInteres"
+                  class="form-control premium"
+                  placeholder="8.0"
+                  min="0.1"
+                  max="50"
+                  step="0.1"
+                  [class.is-invalid]="isFieldInvalid('valorTasaInteres')"
+                />
+                <span class="input-group-text premium">%</span>
+              </div>
+              <div *ngIf="isFieldInvalid('valorTasaInteres')" class="invalid-feedback">
+                {{ getFieldError('valorTasaInteres') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Configuración de Capitalización (solo para Tasa Nominal) -->
+          <div *ngIf="showCapitalizacion" class="capitalizacion-section">
+            <div class="capitalizacion-header">
+              <h3>⚙️ Configuración de Capitalización</h3>
+              <p class="capitalizacion-description">
+                Configure cómo se capitaliza el interés nominal para calcular la tasa efectiva
+              </p>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="frecuenciaCapitalizacion">Frecuencia de Capitalización *</label>
+                <select
+                  id="frecuenciaCapitalizacion"
+                  formControlName="frecuenciaCapitalizacion"
+                  class="form-control premium"
+                  [class.is-invalid]="isFieldInvalid('frecuenciaCapitalizacion')"
+                  (change)="calcularTasaEfectiva()"
+                >
+                  <option value="1">Anual (1 vez por año)</option>
+                  <option value="2">Semestral (2 veces por año)</option>
+                  <option value="4">Trimestral (4 veces por año)</option>
+                  <option value="6">Bimestral (6 veces por año)</option>
+                  <option value="12">Mensual (12 veces por año)</option>
+                  <option value="365">Diaria (365 veces por año)</option>
+                </select>
+                <small class="form-text">
+                  Mayor frecuencia = Mayor tasa efectiva resultante
+                </small>
+                <div *ngIf="isFieldInvalid('frecuenciaCapitalizacion')" class="invalid-feedback">
+                  {{ getFieldError('frecuenciaCapitalizacion') }}
+                </div>
+              </div>
+
+              <!-- Calculadora en Tiempo Real -->
+              <div class="form-group" *ngIf="tasaEfectivaCalculada > 0">
+                <label class="calculator-label">📊 Tasa Efectiva Resultante</label>
+                <div class="calculator-result">
+                  <div class="result-value">{{ tasaEfectivaCalculada | number:'1.4-4' }}%</div>
+                  <div class="result-description">
+                    Esta es la tasa efectiva equivalente que se usará para los cálculos
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comparación Visual -->
+            <div class="comparison-panel" *ngIf="tasaEfectivaCalculada > 0">
+              <h4>🔍 Comparación de Tasas</h4>
+              <div class="comparison-grid">
+                <div class="comparison-item nominal">
+                  <div class="comparison-label">Tasa Nominal</div>
+                  <div class="comparison-value">{{ bonoForm.get('valorTasaInteres')?.value || 0 }}%</div>
+                </div>
+                <div class="comparison-arrow">→</div>
+                <div class="comparison-item efectiva">
+                  <div class="comparison-label">Tasa Efectiva</div>
+                  <div class="comparison-value">{{ tasaEfectivaCalculada | number:'1.4-4' }}%</div>
+                </div>
+              </div>
+              <div class="comparison-explanation">
+                <small>
+                  <strong>Diferencia:</strong> +{{ (tasaEfectivaCalculada - (bonoForm.get('valorTasaInteres')?.value || 0)) | number:'1.4-4' }}% 
+                  debido a la capitalización {{ getFrecuenciaTexto(bonoForm.get('frecuenciaCapitalizacion')?.value) }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Botones de Acción -->
       <div class="form-actions">
-        <button type="button" (click)="router.navigate(['/emisor/bonos'])" class="btn btn-secondary">
+                    <button type="button" (click)="navigateToMisBonos()" class="btn btn-secondary">
           Cancelar
         </button>
-        <button type="submit" class="btn btn-primary" [disabled]="bonoForm.invalid || loading">
+                  <button type="submit" class="btn btn-primary" [disabled]="bonoForm.invalid || isLoading">
           <i class="icon">💾</i>
           Crear Bono
         </button>
