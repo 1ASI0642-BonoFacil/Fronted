@@ -1,0 +1,8 @@
+services:
+  - type: static
+    name: bonofacil-frontend
+    env: static
+    plan: free
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: "dist/<nombre-app>"
+    # Reemplaza <nombre-app> por el nombre real de tu app Angular (ver angular.json) 
