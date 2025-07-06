@@ -61,9 +61,9 @@ import { LoggerService } from '../../../../shared/services/logger.service';
           </div>
           
           <div class="filter-actions">
-            <button class="btn btn-primary" (click)="filtrarPorTasa()" [disabled]="loading">
+            <button class="btn btn-primary" (click)="aplicarFiltros()" [disabled]="loading">
               <i class="icon">🔍</i>
-              Filtrar por Tasa
+              Filtrar
             </button>
             <button class="btn btn-outline" (click)="limpiarFiltros()" [disabled]="loading">
               <i class="icon">🧹</i>
@@ -103,10 +103,11 @@ import { LoggerService } from '../../../../shared/services/logger.service';
           <div class="empty-card">
             <i class="empty-icon">📋</i>
             <h3>No hay bonos disponibles</h3>
-            <p>No se encontraron bonos que coincidan con tus criterios de búsqueda.</p>
+            <p>Ups, por ahora no hay bonos disponibles en el catálogo.</p>
+            <p>Te invitamos a revisar más tarde o contactar con nuestro equipo de soporte.</p>
             <button class="btn btn-primary" (click)="limpiarFiltros()">
               <i class="icon">🔄</i>
-              Ver Todos los Bonos
+              Intentar de nuevo
             </button>
           </div>
         </div>
@@ -739,6 +740,53 @@ export class CatalogoBonosComponent implements OnInit {
         });
       }
     });
+  }
+
+  aplicarFiltros(): void {
+    this.loading = true;
+    this.error = '';
+    
+    this.logger.info('🔍 Aplicando filtros combinados', 'CatalogoBonosComponent', { 
+      moneda: this.filtroMoneda,
+      tasaMinima: this.tasaMinima,
+      tasaMaxima: this.tasaMaxima 
+    });
+    
+    // Si no hay filtros activos, cargar todos
+    if (!this.filtroMoneda && this.tasaMinima === undefined && this.tasaMaxima === undefined) {
+      this.cargarCatalogoBonos();
+      return;
+    }
+    
+    // Aplicamos el filtro apropiado según los campos proporcionados
+    if (this.filtroMoneda && (this.tasaMinima !== undefined || this.tasaMaxima !== undefined)) {
+      // Si tenemos filtro de moneda y tasa, aplicamos ambos
+      this.bonoService.getBonosFiltrados(this.filtroMoneda, this.tasaMinima, this.tasaMaxima).subscribe({
+        next: (bonos: Bono[]) => {
+          this.bonos = bonos;
+          this.loading = false;
+          this.logger.info('✅ Bonos filtrados por moneda y tasa', 'CatalogoBonosComponent', {
+            moneda: this.filtroMoneda,
+            tasaMinima: this.tasaMinima,
+            tasaMaxima: this.tasaMaxima,
+            cantidad: bonos.length
+          });
+        },
+        error: (error: any) => {
+          this.error = error.error?.message || 'Error al filtrar bonos';
+          this.loading = false;
+          this.logger.error('❌ Error al aplicar filtros combinados', 'CatalogoBonosComponent', {
+            error: this.error
+          });
+        }
+      });
+    } else if (this.filtroMoneda) {
+      // Solo filtro de moneda
+      this.filtrarPorMoneda();
+    } else {
+      // Solo filtro de tasa
+      this.filtrarPorTasa();
+    }
   }
 
   filtrarPorTasa(): void {

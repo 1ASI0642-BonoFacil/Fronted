@@ -64,6 +64,20 @@ export class BonoApiAdapter implements BonoRepositoryPort {
     return this.http.get<Bono[]>(`${this.apiUrl}/api/v1/inversor/bonos/catalogo/tasa`, { params });
   }
 
+  getBonosFiltrados(moneda: string, tasaMinima?: number, tasaMaxima?: number): Observable<Bono[]> {
+    let params = new HttpParams();
+    params = params.set('moneda', moneda);
+    
+    if (tasaMinima !== undefined) {
+      params = params.set('tasaMinima', tasaMinima.toString());
+    }
+    if (tasaMaxima !== undefined) {
+      params = params.set('tasaMaxima', tasaMaxima.toString());
+    }
+    
+    return this.http.get<Bono[]>(`${this.apiUrl}/api/v1/inversor/bonos/catalogo/filtrar`, { params });
+  }
+
   getFlujoBonoInversor(id: number): Observable<FlujoCaja[]> {
     return this.http.get<FlujoCaja[]>(`${this.apiUrl}/api/v1/inversor/bonos/${id}/flujo`);
   }

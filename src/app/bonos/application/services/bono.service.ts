@@ -58,6 +58,10 @@ export class BonoService {
     return this.bonoRepository.getBonosPorTasa(tasaMinima, tasaMaxima);
   }
 
+  getBonosFiltrados(moneda: string, tasaMinima?: number, tasaMaxima?: number): Observable<Bono[]> {
+    return this.bonoRepository.getBonosFiltrados(moneda, tasaMinima, tasaMaxima);
+  }
+
   getFlujoBonoInversor(id: number): Observable<FlujoCaja[]> {
     return this.bonoRepository.getFlujoBonoInversor(id);
   }

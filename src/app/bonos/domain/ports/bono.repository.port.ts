@@ -16,6 +16,7 @@ export interface BonoRepositoryPort {
   getBonoDetalle(id: number): Observable<Bono>;
   getBonosPorMoneda(moneda: string): Observable<Bono[]>;
   getBonosPorTasa(tasaMinima?: number, tasaMaxima?: number): Observable<Bono[]>;
+  getBonosFiltrados(moneda: string, tasaMinima?: number, tasaMaxima?: number): Observable<Bono[]>;
   getFlujoBonoInversor(id: number): Observable<FlujoCaja[]>;
 
   // Endpoints de cálculos financieros
