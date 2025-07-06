@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8090'
+  apiUrl: (window as any)['NG_API_URL'] 
 }; 
